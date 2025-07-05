@@ -3,9 +3,9 @@
 "use strict";
 
 const debug = require('debug')('www');
-// Trust Cloudflare (and any upstream proxy) for X-Forwarded-For
+const app   = require('../app');
+
 app.set('trust proxy', 1);
-const app = require('../app');
 
 
 const v8 = require('v8');
