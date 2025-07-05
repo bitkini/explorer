@@ -179,9 +179,10 @@ if (exchangeRates)
       +summaryItem("Difficulty Δ", difficultyAdjustmentData.estimateAvailable ? desc : null)
         if (difficultyAdjustmentData.estimateAvailable)
           span(class=(difficultyAdjustmentData.delta >= 0 ? "text-success" : "text-danger"))
-            if (difficultyAdjustmentData.sign == "+") | +
-            | #{difficultyAdjustmentData.delta}
-            small.ms-1 %
+        if difficultyAdjustmentData.sign == '+'
+          | +
+        | #{difficultyAdjustmentData.delta}
+        small.ms-1 %
           span.text-tiny.text-muted.ms-2
             | (
             span.border-dotted(title=`${difficultyAdjustmentData.blocksLeft.toLocaleString()} block${difficultyAdjustmentData.blocksLeft == 1 ? "" : "s"} / ${progressPercent.toDP(1)}% done`, data-bs-toggle="tooltip") #{difficultyAdjustmentData.timeLeftStr}
