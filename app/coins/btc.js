@@ -14,15 +14,15 @@ for (let i = 1; i < 34; i++) {
 const currencyUnits = [
 	{
 		type:"native",
-		name:"BTC",
+		name:"KINI",
 		multiplier:1,
 		default:true,
-		values:["", "btc", "BTC"],
+		values:["", "btc", "BTC", 'kini', 'KINI'],
 		decimalPlaces:8
 	},
 	{
 		type:"native",
-		name:"mBTC",
+		name:"mKINI",
 		multiplier:1000,
 		values:["mbtc"],
 		decimalPlaces:5

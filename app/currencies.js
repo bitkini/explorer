@@ -2,7 +2,7 @@ global.currencyTypes = {
 	"btc": {
 		id: "btc",
 		type:"native",
-		name:"BTC",
+		name:"KINI",
 		multiplier:1,
 		default:true,
 		decimalPlaces:8
