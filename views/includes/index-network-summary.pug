@@ -11,10 +11,8 @@ if (exchangeRates || networkVolume)
 
 if (nextHalvingData)
   - halvingProgressPercent = new Decimal(100).minus(new Decimal(nextHalvingData.blocksUntilNextHalving).dividedBy(nextHalvingData.halvingBlockInterval).times(100));
-
   if (halvingProgressPercent > 65)
     - halvingSoon = true;
-
   if (halvingProgressPercent > 98)
     - halvingVerySoon = true;
 
@@ -23,10 +21,8 @@ if (halvingVerySoon)
     .d-flex.justify-content-start
       .text-success
         +sectionTitle("Halving Countdown 👀")
-
       .ms-2
         span.spinner-border.spinner-border-sm
-        
   .mb-section
     .card.mb-section.shadow-sm.border-2.border-success
       .card-body
@@ -42,13 +38,11 @@ if (exchangeRates)
       - var tzDiff = -parseFloat(browserTzOffset);
       if (userTzOffset != "unset")
         - tzDiff = parseFloat(userTzOffset);
-
       - var tzMoment = moment.utc(global.exchangeRatesUpdateTime).add(tzDiff, "hours");
       - var timeText = tzMoment.format("h:mma");
 
       +summaryItem("Exchange Rate", `Source: ${new URL(coinConfig.exchangeRateData.jsonUrl).hostname}<br/>Last Updated: ${timeText} (${new Decimal(new Date().getTime() - global.exchangeRatesUpdateTime.getTime()).dividedBy(1000).dividedBy(60).toDP(0)} min ago)`)
         - var formatData = utils.formatExchangedCurrency(1.0, userSettings.localCurrency, 0);
-
         span.text-success
           span.me-1 #{formatData.symbol}
           | #{formatData.val}
@@ -61,7 +55,6 @@ if (exchangeRates)
       +summaryItem("Market Cap")
         - var supply = utils.estimatedSupply(getblockchaininfo.blocks);
         - var mcapData = utils.formatLargeNumber(parseFloat(supply) * global.exchangeRates[userSettings.localCurrency], 3);
-
         span.me-1 #{global.currencyTypes[userSettings.localCurrency].symbol}
         span #{mcapData[0]}
         if (mcapData[1].textDesc)
@@ -73,15 +66,11 @@ if (exchangeRates)
       if (global.goldExchangeRates && global.goldExchangeRates["usd"] && global.exchangeRates && global.exchangeRates["usd"])
         +summaryItem("Gold Rate", `Source: ${new URL(coinConfig.goldExchangeRateData.jsonUrl).hostname}`)
           - var formatData = utils.formatExchangedCurrency(1.0, "au");
-
           span.text-warning #{formatData.val}
           small.ms-1.text-muted #{formatData.unit}
 
       if (networkVolume)
         +summaryItem("24hr Volume", `Total output of all transactions over the last 24hrs (blocks: [#${networkVolume.d1.endBlock.toLocaleString()} - #${networkVolume.d1.startBlock.toLocaleString()}]).`)
-          - var currencyValue = parseInt(networkVolume.d1.amt);
-          - var currencyValueDecimals = 0;
-
           if (userSettings.displayCurrency == "btc")
             +valueDisplaySpecial(networkVolume.d1.amt, 0)
           else
@@ -103,13 +92,10 @@ if (exchangeRates)
     if (hashrate7d)
       +summaryItem("7d Hashrate", "The average hashrate of the global mining network over the last 7 days. A comparison to the 30-day average is included to help gauge the rate of change.")
         - var hashrate7dayData = utils.formatLargeNumber(hashrate7d, 1);
-
         span.me-1 #{hashrate7dayData[0]}
         span.small.text-muted.border-dotted(title=`${hashrate7dayData[1].abbreviation}H = ${hashrate7dayData[1].name}-hash (x10^${hashrate7dayData[1].exponent})` data-bs-toggle='tooltip') #{hashrate7dayData[1].abbreviation}H/s
-
         if (hashrate30d)
           - var ratio = hashrate7d / hashrate30d;
-
           span.text-tiny.text-muted.ms-2
             | (
             span.border-dotted(title='7d hashrate vs 30d hashrate.' data-bs-toggle='tooltip')
@@ -148,50 +134,26 @@ if (exchangeRates)
       - var difficultyData = utils.formatLargeNumber(getblockchaininfo.difficulty, 3);
 
       if (getblockchaininfo.difficulty > 1000)
-        span.border-dotted(title=parseFloat(getblockchaininfo.difficulty).toLocaleString(), data-bs-toggle="tooltip")
-          span #{difficultyData[0]}
-          | x
+        span.border-dotted(title=parseFloat(getblockchaininfo.difficulty).toLocaleString(), data-bs-toggle="tooltip") 
+          span #{difficultyData[0]} x 
           sup #{difficultyData[1].exponent}
       else
         span #{new Decimal(getblockchaininfo.difficulty).toDP(3)}
 
-      if (global.athDifficulty)
-        span.text-tiny.text-muted.ms-2
-          | (
-          - var diffX = getblockchaininfo.difficulty;
-          if (global.athDifficulty == diffX)
-            span.border-dotted(title='The current difficulty is an All-Time High!' data-bs-toggle='tooltip')
-              span.text-success ATH
-          else
-            - var diffDrop = new Decimal(global.athDifficulty).minus(diffX).dividedBy(global.athDifficulty).times(100).toDP(2);
-            span.border-dotted(title=`The current difficulty is ${diffDrop}% lower than the All-Time High.` data-bs-toggle='tooltip')
-              span.text-danger -#{diffDrop}%
-          | )
+      if (difficultyAdjustmentData.estimateAvailable)
+        span(class=(difficultyAdjustmentData.delta >= 0 ? "text-success" : "text-danger"))
+          if difficultyAdjustmentData.sign == '+'
+            | +
+          | #{difficultyAdjustmentData.delta}
+        small.ms-1 %
+      span.text-tiny.text-muted.ms-2
 
     if (chainTxStats && chainTxStats[7 * targetBlocksPerDay])
       +summaryItem("7d Transactions", "The total number of transactions that have been confirmed in the blockchain over the last 7 days.")
         | #{chainTxStats[7 * targetBlocksPerDay].window_tx_count.toLocaleString()}
 
-    if (difficultyAdjustmentData)
-      - let progressPercent = new Decimal(difficultyAdjustmentData.calculationBlockCount).dividedBy(difficultyAdjustmentData.calculationBlockCount + difficultyAdjustmentData.blocksLeft).times(100);
-      - var desc = `Estimate for the difficulty adjustment that will occur in ${difficultyAdjustmentData.blocksLeft.toLocaleString()} block${difficultyAdjustmentData.blocksLeft == 1 ? "" : "s"} (${difficultyAdjustmentData.timeLeftStr}). This is calculated using the average block time during the current difficulty epoch (currently, the last ${difficultyAdjustmentData.calculationBlockCount.toLocaleString()} block${difficultyAdjustmentData.calculationBlockCount == 1 ? "" : "s"}). Note: This estimate becomes more reliable as the difficulty epoch nears its end.`;
-
-      +summaryItem("Difficulty Δ", difficultyAdjustmentData.estimateAvailable ? desc : null)
-        if (difficultyAdjustmentData.estimateAvailable)
-          span(class=(difficultyAdjustmentData.delta >= 0 ? "text-success" : "text-danger"))
-        if difficultyAdjustmentData.sign == '+'
-          | +
-        | #{difficultyAdjustmentData.delta}
-        small.ms-1 %
-          span.text-tiny.text-muted.ms-2
-            | (
-            span.border-dotted(title=`${difficultyAdjustmentData.blocksLeft.toLocaleString()} block${difficultyAdjustmentData.blocksLeft == 1 ? "" : "s"} / ${progressPercent.toDP(1)}% done`, data-bs-toggle="tooltip") #{difficultyAdjustmentData.timeLeftStr}
-            | )
-          .progress.mt-1.mx-lg-6.me-6(style="height: 5px;", role="progressbar", aria-label="Difficulty adjustment progress", aria-valuenow=progressPercent.toDP(0), aria-valuemin="0" aria-valuemax="100")
-            .progress-bar(style=`width: ${progressPercent.toDP(0)}%`)
-        else
-          small.border-dotted.text-muted(title="Estimate pending...<br/>A new difficulty epoch just started. Difficulty adjustment estimates made with too little data can be very unreliable, so are not calculated.", data-bs-toggle="tooltip", data-bs-html="true")
-            i.bi-hourglass-split
+    if (difficultyAdjustmentData && !difficultyAdjustmentData.estimateAvailable)
+      +summaryItem("Difficulty Δ", null)
 
     +summaryItem("Coins", utxoSetSummary ? null : (config.slowDeviceMode ? `Because this app is configured to conserve resources (SLOW_DEVICE_MODE=true), this value is estimated, using a checkpoint.` : `This value is estimated, using a checkpoint.`))
       - var maxSupply = coinConfig.maxSupplyByNetwork[activeBlockchain];
@@ -222,7 +184,7 @@ if (exchangeRates)
       - smartFeeEstimateTimes.push('asap');
     if (smartFeeEstimates[6])
       - smartFeeEstimateBlocks.push(6);
-      - smartFeeEstimateStrings.push(smartFeeEstimates[6]);
+      - smartFeeEstimateStrings.push(smartFeeEstimateStrings[6]);
       - smartFeeEstimateTimes.push('hr');
     if (smartFeeEstimates[144])
       - smartFeeEstimateBlocks.push(144);
@@ -236,83 +198,35 @@ if (exchangeRates)
       - const blockCount = new Decimal(mempoolInfo.bytes).dividedBy(coinConfig.maxBlockSize)
       - const thresholds_blockCount = {warning: 10, danger: 20}
       - const colorClass_blockCount = (blockCount > thresholds_blockCount.danger) ? "text-danger" : (blockCount > thresholds_blockCount.warning ? "text-warning" : "text-success");
-      - const thresholds_totalFees = {warning: 1, danger: 5}
-      - const colorClass_totalFees = (mempoolInfo.total_fee > thresholds_totalFees.danger) ? "text-danger" : (mempoolInfo.total_fee > thresholds_totalFees.warning ? "text-warning" : "text-success");
 
       +summaryItem("Mempool", "The number of unconfirmed transactions in your node's mempool, and the number of blocks needed to confirm those transactions", null, null, "icon:bi-hourglass-split", "./mempool-summary", "View mempool summary details")
-        
         span.border-dotted(title=`<b># Unconfirmed Transactions</b><br/><span class='text-success'>Low (N ≤ ${thresholds_txCount.warning.toLocaleString()})</span><br/><span class='text-warning'>High (${thresholds_txCount.warning.toLocaleString()} < N ≤ ${thresholds_txCount.danger.toLocaleString()})</span><br/><span class='text-danger'>Very High (N > ${thresholds_txCount.danger.toLocaleString()})</span>`, data-bs-toggle="tooltip", data-bs-html="true")
           span(class=colorClass_txCount) #{mempoolInfo.size.toLocaleString()}
           span.text-tiny.text-muted.ms-1 tx
 
         span.mx-2.text-muted /
         span.small
-          span.border-dotted(title=`<b># Blocks to clear this node's mempool</b><br/><span class='text-success'>Low (N ≤ ${thresholds_blockCount.warning.toLocaleString()})</span><br/><span class='text-warning'>High (${thresholds_blockCount.warning.toLocaleString()} < N ≤ ${thresholds_blockCount.danger.toLocaleString()})</span><br/><span class='text-danger'>Very High (N > ${thresholds_blockCount.danger.toLocaleString()})</span>`, data-bs-toggle="tooltip", data-bs-html="true")
-            span(class=colorClass_blockCount) #{blockCount.toDP(2)}
-            span.text-tiny.text-muted.ms-1
-              i.bi-box
-
-        span.mx-2.text-muted /
-        span.small
-          - // define low/high total-fee thresholds for formatFees()
-          - const thresholds_totalFees = {warning: 1, danger: 5}
-          - // helper to format fees in tooltip
-          - const formatFees = (inputVal) => {
+          -
+            // define low/high total-fee thresholds for formatFees()
+            const thresholds_totalFees = {warning: 1, danger: 5};
+            // helper to format fees in tooltip
+            const formatFees = (inputVal) => {
               const displayCurrency = userSettings.displayCurrency == "local" ? userSettings.localCurrency : userSettings.displayCurrency;
-              const parts = utils.formatCurrencyAmount(inputVal, displayCurrency)
-              const currencyType = currencyTypes[parts.currencyUnit.toLowerCase()]
-              let val = parts.val
-              if (currencyType.type == "exchanged") {
-                val = val.split('.')[0]
-                return `${currencyType.symbol}&nbsp;${val}`
+              const parts = utils.formatCurrencyAmount(inputVal, displayCurrency);
+              const currencyType = currencyTypes[parts.currencyUnit.toLowerCase()];
+              let val = parts.val;
+              if (currencyType.type === "exchanged") {
+                val = val.split('.')[0];
+                return `${currencyType.symbol}&nbsp;${val}`;
               }
-              if (parts.currencyUnit == "sat") {
+              if (parts.currencyUnit === "sat") {
                 const largeNumberData = utils.formatLargeNumberSignificant(parts.intVal, 3);
-                val = `${largeNumberData[0]}${largeNumberData[1].abbreviation}`
+                val = `${largeNumberData[0]}${largeNumberData[1].abbreviation}`;
               }
-              return `${val}&nbsp;<span class='text-tiny'>${currencyType.name}</span>`
-            }
-          - const warningFees = formatFees(thresholds_totalFees.warning)
-          - const dangerFees  = formatFees(thresholds_totalFees.danger)
+              return `${val}&nbsp;<span class='text-tiny'>${currencyType.name}</span>`;
+            };
+            const warningFees = formatFees(thresholds_totalFees.warning);
+            const dangerFees  = formatFees(thresholds_totalFees.danger);
           span.border-dotted(title=`<b>Unconfirmed Transactions' total fees</b><br/><span class='text-success'>Low (N ≤ ${warningFees})</span><br/><span class='text-warning'>High (${warningFees} < N ≤ ${dangerFees})</span><br/><span class='text-danger'>Very High (N > ${dangerFees})</span>`, data-bs-toggle="tooltip", data-bs-html="true") &Sigma;
           span.ms-1(class=colorClass_totalFees)
             +valueDisplay(mempoolInfo.total_fee, {hideLessSignificantDigits:true})
-
-    if (mempoolInfo && global.activeBlockchain != "signet")
-      +summaryRow
-        +summaryItem("Next Block", "A prediction for the next block based on getblocktemplate.", null, null, "icon:bi-minecart-loaded", "./next-block", "View next block details")
-          #index-next-block
-            .text-center.text-reset.pb-4
-              .mt-2
-              span.spinner-border.spinner-border-sm
-
-    if (smartFeeEstimateStrings.length > 0)
-      +summaryItem("Smart Fees", `Recommended fee rate to target confirmation in ${smartFeeEstimateBlocks.join(", ")} blocks`, "sat/vB")
-        each x, xIndex in smartFeeEstimateStrings
-          if (xIndex > 0)
-            span.mx-2.text-muted /
-          | #{x}
-          span.text-tiny.text-muted.ms-1 (#{smartFeeEstimateTimes[xIndex]})
-
-  if (userSettings.homepageShowTechDetails == "true")
-    hr.mt-3.mb-3
-
-    +summaryRow(1 + (getblockchaininfo.size_on_disk ? 1 : 0) + (utxoSetSummary || utxoSetSummaryPending ? 1 : 0))
-      if (getblockchaininfo.size_on_disk)
-        +summaryItem("Disk Usage")
-          - var sizeData = utils.formatLargeNumber(getblockchaininfo.size_on_disk, 1);
-          | #{sizeData[0]} #{sizeData[1].abbreviation}B
-
-      +summaryItem("Total Hashes", "Estimate of total work done (chainwork).")
-        - var chainworkData = utils.formatLargeNumber(parseInt("0x" + getblockchaininfo.chainwork), 2);
-        span #{chainworkData[0]}
-        small.px-2 x
-        sup #{chainworkData[1].exponent}
-
-      if (utxoSetSummary || utxoSetSummaryPending)
-        +summaryItem("UTXOs", "Total unspent outputs (UTXOs).")
-          if (utxoSetSummary)
-            | #{utxoSetSummary.txouts.toLocaleString()}
-          else
-            small.text-muted.border-dotted(title=utxoCalculatingDesc, data-bs-toggle="tooltip") calculating...
-
