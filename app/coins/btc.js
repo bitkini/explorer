@@ -17,7 +17,7 @@ const currencyUnits = [
 		name:"KINI",
 		multiplier:1,
 		default:true,
-		values:["", "btc", "BTC", 'kini', 'KINI'],
+		values:["", "btc", "BTC"],
 		decimalPlaces:8
 	},
 	{
